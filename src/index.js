@@ -152,45 +152,50 @@ const welcomeMessages = [
 ];
 
 client.on('guildMemberAdd', async member => {
-    const LeaveChannel = member.guild.channels.cache.get('1260987656813285579');
-    const membercount = member.guild.memberCount;
+  const LeaveChannel = member.guild.channels.cache.get('1260987656813285579');
+  const membercount = member.guild.memberCount;
 
-    // Select a random welcome message
-    const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    const personalizedMessage = randomMessage.replace(/{userId}/g, member.id).replace(/{membercount}/g, membercount);
+  // Select a random welcome message
+  const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+  const personalizedMessage = randomMessage.replace(/{userId}/g, member.id).replace(/{membercount}/g, membercount);
 
-    const LeaveEmbed = new EmbedBuilder()
-        .setColor("Green")
-        .setAuthor({ name: `${member.user.username}`, iconURL: member.displayAvatarURL({ dynamic: true }) })
-        .setTitle('A New Member Joined FlyAway Virtual Flight School!')
-        .setDescription(personalizedMessage)
-        .addFields(
-            { name: 'Member Count', value: `${membercount}`, inline: true },
-            { name: 'Account Created', value: `${member.user.createdAt.toDateString()}`, inline: true }
-        )
-        .setTimestamp()
-        .setFooter({ text: `ID: ${member.id}` });
+  const LeaveEmbed = new EmbedBuilder()
+      .setColor("Green")
+      .setAuthor({ name: `${member.user.username}`, iconURL: member.displayAvatarURL({ dynamic: true }) })
+      .setTitle('A New Member Joined FlyAway Virtual Flight School!')
+      .setDescription(personalizedMessage)
+      .addFields(
+          { name: 'Member Count', value: `${membercount}`, inline: true },
+          { name: 'Account Created', value: `${member.user.createdAt.toDateString()}`, inline: true }
+      )
+      .setTimestamp()
+      .setFooter({ text: `ID: ${member.id}` });
 
-    try {
-        // Send the embed message with the personalized welcome content
-        const sentMessage = await LeaveChannel.send({ embeds: [LeaveEmbed] });
-        await sentMessage.react('🎉');
+  try {
+      // Send the embed message with the personalized welcome content
+      const sentMessage = await LeaveChannel.send({ embeds: [LeaveEmbed] });
+      await sentMessage.react('🎉');
 
-        member.roles.add(member.guild.roles.cache.find(role => role.name === "vStudent Pilot"));
+      // Add vStudent Pilot role to the member
+      member.roles.add(member.guild.roles.cache.find(role => role.name === "vStudent Pilot"));
 
-        // Send a direct message to the new member
-        await member.send(`Welcome to the FlyAway Virtual Flight School! You are our ${membercount}th member to join us 🎉
+      // Change the member's nickname to include "| vSP"
+      await member.setNickname(`${member.user.username} | vSP`);
+
+      // Send a direct message to the new member
+      await member.send(`Welcome to the FlyAway Virtual Flight School! You are our ${membercount}th member to join us 🎉
 
 To better understand our community and how it works, please check out our SOPs and Policies at https://flyawayvirtual.com/documents/. You have automatically been awarded our **vStudent Pilot** role as part of our system when you joined. If you are already proficient on the network and just want to chill with us, we recommend you take a couple checkouts and follow the process outlined in the Training SOP to quickly earn your iP3 rating. 
 
-From all of us at **FlyAway**, welcome and enjoy your time with us.`)
-        
-    console.log(`${member.user.username} has joined FlyAway. They have succesfully been DMed and a message has been sent in the welcome channel.`)
+From all of us at **FlyAway**, welcome and enjoy your time with us.`);
 
-    } catch (error) {
-        console.error('Error sending welcome message or reacting:', error);
-    }
+      console.log(`${member.user.username} has joined FlyAway. Their nickname has been set and they have been successfully DMed.`);
+      
+  } catch (error) {
+      console.error('Error sending welcome message, reacting, or setting nickname:', error);
+  }
 });
+
 
 
 // vCFI promotion
@@ -297,6 +302,31 @@ async function updateDiscordRoles(studentId, newRating, oldRating) {
   }
 }
 
+// Add this function to your index.js
+async function notifyDiscordBot(eventType, data) {
+  if (eventType === 'new_training_request') {
+    const student = await client.users.fetch(data.studentId);
+    await student.send(`Your training request for ${data.trainingType} Training has been submitted successfully. Your session is currently pending and a vCFI will pick it up if able. --- Note: vCFIs are volunteers and not required to pick up your session, students are recommended to submit multiple training requests in different times. `);
+  } else if (eventType === 'accepted_training_request') {
+    const student = await client.users.fetch(data.studentId);
+    const instructor = await client.users.fetch(data.instructorId);
+
+    await student.send(`Your training request for ${data.trainingType} has been accepted by ${data.instructorNickname}. Session details: ${data.requestedDateTime}`);
+    await instructor.send(`You have accepted a training request for ${data.studentNickname}. Session details: ${data.requestedDateTime}`);
+  }
+}
+
+async function sendDirectMessage(userId, message) {
+  try {
+    const user = await client.users.fetch(userId); // Fetch the user object
+    await user.send(message); // Send the direct message
+  } catch (error) {
+    console.error(`Error sending direct message to ${userId}:`, error);
+    // Handle the error appropriately
+  }
+}
+
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -304,6 +334,10 @@ const InstructorResource = require('./Schemas/InstructorResource'); // Import In
 const Exam = require('./Schemas/Exam');
 const ExamAttempt = require('./Schemas/ExamAttempt');
 const ExamAssignment = require('./Schemas/ExamAssignment');
+const trainingRequestSchema = require('./Schemas/TrainingRequest');
+const userSchema = require('./Schemas/User');
+const TrainingRequest = mongoose.model('TrainingRequest', trainingRequestSchema);
+const User = mongoose.model('User', userSchema);
 
 
 const PORT = process.env.PORT || 3001;
@@ -715,9 +749,99 @@ app.delete('/faq/:id', async (req, res) => {
   }
 });
 
+app.post('/training-requests', async (req, res) => {
+  try {
+    console.log('Received training request:', req.body);
+    const newRequest = new TrainingRequest(req.body);
+    console.log('Created new request object:', newRequest);
+    await newRequest.save();
+    console.log('Request saved successfully');
+    await notifyDiscordBot('new_training_request', newRequest);
+    console.log('Discord bot notified');
+    res.status(201).json(newRequest);
+  } catch (error) {
+    console.error('Error creating training request:', error);
+    res.status(500).json({ error: 'Failed to create training request', details: error.message });
+  }
+});
+
+app.get('/training-requests', async (req, res) => {
+  try {
+    const requests = await TrainingRequest.find().sort({ requestedDateTime: 1 });
+    res.json(requests);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch training requests' });
+  }
+});
+
+app.get('/training-requests/:id', async (req, res) => {
+  try {
+    const request = await TrainingRequest.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ error: 'Training request not found' });
+    }
+    res.json(request);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch training request' });
+  }
+});
 
 
-  
+
+app.put('/training-requests/:id', async (req, res) => {
+  try {
+    const request = await TrainingRequest.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!request) {
+      return res.status(404).json({ error: 'Training request not found' });
+    }
+    res.json(request);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update training request' });
+  }
+});
+
+app.delete('/training-requests/:id', async (req, res) => {
+  try {
+    const request = await TrainingRequest.findByIdAndDelete(req.params.id);
+    if (!request) {
+      return res.status(404).json({ error: 'Training request not found' });
+    }
+    res.json({ message: 'Training request deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete training request' });
+  }
+});
+
+app.post('/training-requests/:id/accept', async (req, res) => {
+  try {
+    const request = await TrainingRequest.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ error: 'Training request not found' });
+    }
+
+    // Update request status and instructor information
+    request.status = 'accepted';
+    request.instructorId = req.query.instructorId;
+    request.instructorNickname = req.query.instructorNickname;
+
+    await request.save();
+
+    // Fetch student and instructor details (if needed for the DMs)
+    const student = await User.findById(request.studentId);
+    const instructor = await User.findById(request.instructorId);
+
+    // Send DMs to student and instructor
+    await sendDirectMessage(request.studentId, `Your ${request.trainingType} training request for ${request.requestedDateTime} has been accepted by ${instructor.nickname}.`);
+    await sendDirectMessage(request.instructorId, `You have accepted a ${request.trainingType} training request from ${student.nickname} for ${request.requestedDateTime}.`);
+
+    res.json(request);
+  } catch (error) {
+    console.error('Error accepting training request:', error);
+    res.status(500).json({ error: 'Failed to accept training request', details: error.message });
+  }
+});
+
+
 
 app.listen(PORT, () => {
     console.log(`API server running on port ${PORT}`);

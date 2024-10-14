@@ -41,8 +41,8 @@ module.exports = {
                 { name: 'Europe', value: 'Europe' },
                 { name: 'Africa', value: 'Africa' },
                 { name: 'Asia', value: 'Asia' },
-                { name: 'Australia', value: 'Australia' },
-                { name: 'Antarctica', value: 'Antarctica' }
+                { name: 'Australia', value: 'Australia' }
+
             ))
     // Optional option after required options
     .addStringOption(options => options.setName('comments').setDescription('Any extra comments?').setRequired(false)) // Make this optional
