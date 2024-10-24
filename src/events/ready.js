@@ -27,13 +27,10 @@ module.exports = {
     // Student Report Database Connection
     if (studentReportMongoURL) {
       try {
-        const studentReportConnection = await mongoose.createConnection(studentReportMongoURL, {});
+        const studentReportConnection = await mongoose.createConnection(studentReportMongoURL, {
+        });
         console.log('FlyAway is connected to the Student Report Database!');
         global.studentReportConnection = studentReportConnection;
-    
-        // Add this line to create the User model
-        const userSchema = require('../Schemas/User');
-        global.User = studentReportConnection.model('User', userSchema);
       } catch (error) {
         console.error("FlyAway Bot is unable to connect to the Student Report Database:", error);
       }
@@ -64,21 +61,6 @@ if (process.env.FAQ_MONGODB_URI) {
   }
 }
 
-// In ready.js, after establishing the connection
-if (process.env.TRAINING_REQUESTS_MONGODB_URI) {
-  try {
-    const trainingRequestsConnection = await mongoose.createConnection(process.env.TRAINING_REQUESTS_MONGODB_URI, {});
-    console.log('FlyAway is connected to the Training Requests Database!');
-    global.trainingRequestsConnection = trainingRequestsConnection;
-
-    // Move the model creation here
-    const trainingRequestSchema = require('../Schemas/TrainingRequest');
-    global.TrainingRequest = trainingRequestsConnection.model('TrainingRequest', trainingRequestSchema);
-  } catch (error) {
-    console.error("FlyAway Bot is unable to connect to the Training Requests Database:", error);
-  }
-}
-
     try {
       client.user.setStatus("online");
       client.user.setActivity("FlyAway students train!", {
@@ -89,4 +71,3 @@ if (process.env.TRAINING_REQUESTS_MONGODB_URI) {
     }
   },
 };
-

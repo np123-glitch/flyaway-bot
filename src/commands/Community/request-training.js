@@ -29,7 +29,22 @@ module.exports = {
             { name: 'iP3', value: 'iP3' },
             { name: 'Targeted Training', value: 'Targeted Training' } // Add this choice
         ))
+        
+			.addStringOption(option =>
+				option.setName('preferred-sim')
+					.setDescription('In which continent are you comfortable teaching in?')
+					.setRequired(true)
+					.addChoices(
+						{ name: 'MSFS2020', value: 'MSFS2020' },
+						{ name: 'X-Plane 12', value: 'X-Plane 12' },
+						{ name: 'X-Plane 11', value: 'X-Plane 11' },
+						{ name: 'P3D', value: 'P3D' },
+						{ name: 'Any Flight Sim', value: 'No Preference' }
+
+					))
+
     .addStringOption(options => options.setName('desiredaircraft').setDescription('What would be your desired aircraft on this flight?').setRequired(true))
+
     .addStringOption(option =>
         option.setName('location')
             .setDescription('In which continent are you looking to fly in?')
@@ -51,6 +66,7 @@ module.exports = {
         const student = (`${interaction.user.id}`);
         const vatsimexperience = interaction.options.getString('vatsimexperience');
         const vfrorifr = interaction.options.getString('vfrorifr');
+        const preferredsim = interaction.options.getString('preferred-sim');
         const desiredaircraft = interaction.options.getString('desiredaircraft');
         const location = interaction.options.getString('location');
         const comments = interaction.options.getString('comments'); // Get the targeted training description
@@ -59,18 +75,19 @@ module.exports = {
             .setColor(0xFFFFFF)
             .setTitle('Training Request Submitted')
             .setAuthor({ name: 'FlyAway Bot', iconURL: 'https://media.discordapp.net/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=669530cf&is=6693df4f&hm=d23cfa54fd248a3e1a23f5a1f319c134a3efbfe1d3ed5344b93362c715fd27f5&=&format=webp&quality=lossless' })
-            .setDescription('Your training request was subbmitted. A member of the Training Team will pick it up if they would like. Your session is not **required** to be accepted. You may request more sessions whenever you would like.')
+            .setDescription('Your training request was submitted. A member of the Training Team will pick it up if they would like. Your session is not **required** to be accepted. You may request more sessions whenever you would like.')
             .addFields(
                 { name: 'Student', value: `${interaction.user}` },
                 { name: 'VATSIM Experience', value: `${vatsimexperience}` },
                 { name: 'Desired Flight Type', value: `${vfrorifr}` },
+                { name: 'Preferred Sim', value: `${preferredsim}` },
                 { name: 'Desired Aircraft', value: `${desiredaircraft}` },
                 { name: 'Location', value: `${location}` },
             )
-            .setFooter({ text: `Maintained by the Fly Away's Administrative Department`, iconURL: 'https://media.discordapp.net/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=669530cf&is=6693df4f&hm=d23cfa54fd248a3e1a23f5a1f319c134a3efbfe1d3ed5344b93362c715fd27f5&=&format=webp&quality=lossless' });
+            .setFooter({ text: `Maintained by the FlyAway's Administrative Department`, iconURL: 'https://media.discordapp.net/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=669530cf&is=6693df4f&hm=d23cfa54fd248a3e1a23f5a1f319c134a3efbfe1d3ed5344b93362c715fd27f5&=&format=webp&quality=lossless' });
 
         if (comments) {
-            exampleEmbed.addFields({ name: 'Extra Comments', value: `${comments}` }); // Add the description if targeted training is selected
+            exampleEmbed.addFields({ name: 'Extra Comments', value: `${comments}` }); // Add the description if comments is selected
         }
 
         const accept = new ButtonBuilder()

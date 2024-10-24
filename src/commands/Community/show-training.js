@@ -5,7 +5,7 @@ const { EmbedBuilder } = require('discord.js');
 module.exports = {
     data: new SlashCommandBuilder()
     .setName ('show-training')
-    .setDescription('This is the command for vCFIs to show impromtpu training availablility.')
+    .setDescription('This is the command for vCFIs to show impromptu training availability.')
     .addStringOption(option =>
 		option.setName('can-teach')
 			.setDescription('The training type')
@@ -18,7 +18,23 @@ module.exports = {
 
                 
 			))
-		.addStringOption(options => options.setName('aircraft').setDescription('What aircarfts are you comfortable teaching in?').setRequired(true))
+
+			.addStringOption(option =>
+				option.setName('preferred-sim')
+					.setDescription('In which continent are you comfortable teaching in?')
+					.setRequired(true)
+					.addChoices(
+						{ name: 'MSFS2020', value: 'MSFS2020' },
+						{ name: 'X-Plane 12', value: 'X-Plane 12' },
+						{ name: 'X-Plane 11', value: 'X-Plane 11' },
+						{ name: 'P3D', value: 'P3D' },
+						{ name: 'Any Flight Sim', value: 'No Preference' }
+
+					))
+
+
+		.addStringOption(options => options.setName('aircraft').setDescription('What aircraft are you comfortable teaching in?').setRequired(true))
+
 			.addStringOption(option =>
 				option.setName('location')
 					.setDescription('In which continent are you comfortable teaching in?')
@@ -30,34 +46,43 @@ module.exports = {
 						{ name: 'Europe', value: 'Europe' },
 						{ name: 'Africa', value: 'Africa' },
 						{ name: 'Asia', value: 'Asia' },
-						{ name: 'Australia', value: 'Australia' }
+						{ name: 'Oceania', value: 'Oceania' }
 
-					)),	
+					))
     
-			
+				    // Optional option after required options
+		.addStringOption(options => options.setName('comments').setDescription('Any extra comments?').setRequired(false)), // Make this optional
 			
 			async execute(interaction, client) {
 
 				const student = (`${interaction.user.id}`);
 				const session = interaction.options.getString('can-teach');
+				const preferredsim = interaction.options.getString('preferred-sim');
 				const aircraft = interaction.options.getString('aircraft');
 				const location = interaction.options.getString('location');
+				const comments = interaction.options.getString('comments'); // Get the targeted training description
 				const exampleEmbed = new EmbedBuilder()
+				
 		
-	
+
 	
     .setColor(0xFFFFFF)
-	.setTitle('Impromptu Training Availablility Posted')
+	.setTitle('Impromptu Training Availability Posted')
 	.setAuthor({ name: 'FlyAway Bot', iconURL: 'https://cdn.discordapp.com/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=6695d98f&is=6694880f&hm=196e3e7800f06e6965b8e0380e7638d9d29b07253b8ecc9df13e128e71faf325&' })
-	.setDescription('A member of the staff has posted availablility to train!! Click the button below to begin.')
+	.setDescription('A member of the staff has posted availability to train!! Click the button below to begin.')
 	.addFields(
 		{ name: 'Flight Instructor', value: `${interaction.user}` },
 		{ name: 'Type Of Session Available To Teach', value: `${session}` },
-		{ name: 'Aircrafts Available To Teach', value: `${aircraft}` },
+		{ name: 'Preferred Flight Simulator', value: `${preferredsim}` },
+		{ name: 'Aircraft Available To Teach', value: `${aircraft}` },
 		{ name: 'Flight Location', value: `${location}` }
 	)
-	.setFooter({ text: 'Maintained by the Fly Away Virtual Flight School Administration Department', iconURL: 'https://cdn.discordapp.com/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=6695d98f&is=6694880f&hm=196e3e7800f06e6965b8e0380e7638d9d29b07253b8ecc9df13e128e71faf325&' });
+	.setFooter({ text: 'Maintained by the FlyAway Virtual Flight School Administration Department', iconURL: 'https://cdn.discordapp.com/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=6695d98f&is=6694880f&hm=196e3e7800f06e6965b8e0380e7638d9d29b07253b8ecc9df13e128e71faf325&' });
 
+	if (comments) {
+		exampleEmbed.addFields({ name: 'Extra Comments', value: `${comments}` }); // Add the description if comments is selected
+	}
+	
     const accept = new ButtonBuilder()
 			.setCustomId(`acceptAvailablility_${interaction.user.id}`)
 			.setLabel('Accept Availability')
@@ -74,7 +99,7 @@ module.exports = {
 			await interaction.reply ({content: `<@&1262252948415582318>`, embeds: [exampleEmbed], components: [row] });
 			
 
-	console.log(`${interaction.user} has used the /show-training command. Waiting for a student to accept the availablity.`)					
+	console.log(`${interaction.user} has used the /show-training command. Waiting for a student to accept the availability.`)					
 			
 
 

@@ -12,6 +12,7 @@ const getFAQModel = require('./Schemas/FAQ');
 
 
 
+
 const client = new Client({
     intents: [
 GatewayIntentBits.Guilds,
@@ -118,6 +119,27 @@ client.on('interactionCreate', async (interaction) => {
     const command = args.shift();
 
     if (command === 'hours') {      
+    }
+});
+
+// Forum channel IDs
+const forumChannels = ['1289283910240309321', '1296599166906138654'];
+
+client.on('threadCreate', async (thread) => {
+    // Check if the new thread is created in one of the forum channels
+    if (forumChannels.includes(thread.parentId)) {
+        // Add a 10-second delay before replying
+        setTimeout(async () => {
+            try {
+                // Reply to the user who created the thread (starterMessage.author)
+                const starterMessage = await thread.fetchStarterMessage(); // Fetch the original post
+                if (starterMessage) {
+                    await starterMessage.reply("Thanks for your request, we will accommodate as soon as possible.");
+                }
+            } catch (error) {
+                console.error('Error replying to the thread:', error);
+            }
+        }, 10000); // 10-second delay (10000 milliseconds)
     }
 });
 
@@ -302,29 +324,6 @@ async function updateDiscordRoles(studentId, newRating, oldRating) {
   }
 }
 
-// Add this function to your index.js
-async function notifyDiscordBot(eventType, data) {
-  if (eventType === 'new_training_request') {
-    const student = await client.users.fetch(data.studentId);
-    await student.send(`Your training request for ${data.trainingType} Training has been submitted successfully. Your session is currently pending and a vCFI will pick it up if able. --- Note: vCFIs are volunteers and not required to pick up your session, students are recommended to submit multiple training requests in different times. `);
-  } else if (eventType === 'accepted_training_request') {
-    const student = await client.users.fetch(data.studentId);
-    const instructor = await client.users.fetch(data.instructorId);
-
-    await student.send(`Your training request for ${data.trainingType} has been accepted by ${data.instructorNickname}. Session details: ${data.requestedDateTime}`);
-    await instructor.send(`You have accepted a training request for ${data.studentNickname}. Session details: ${data.requestedDateTime}`);
-  }
-}
-
-async function sendDirectMessage(userId, message) {
-  try {
-    const user = await client.users.fetch(userId); // Fetch the user object
-    await user.send(message); // Send the direct message
-  } catch (error) {
-    console.error(`Error sending direct message to ${userId}:`, error);
-    // Handle the error appropriately
-  }
-}
 
 
 const app = express();
@@ -334,10 +333,7 @@ const InstructorResource = require('./Schemas/InstructorResource'); // Import In
 const Exam = require('./Schemas/Exam');
 const ExamAttempt = require('./Schemas/ExamAttempt');
 const ExamAssignment = require('./Schemas/ExamAssignment');
-const trainingRequestSchema = require('./Schemas/TrainingRequest');
-const userSchema = require('./Schemas/User');
-const TrainingRequest = mongoose.model('TrainingRequest', trainingRequestSchema);
-const User = mongoose.model('User', userSchema);
+
 
 
 const PORT = process.env.PORT || 3001;
@@ -746,98 +742,6 @@ app.delete('/faq/:id', async (req, res) => {
     res.status(204).send();
   } catch (error) {
     res.status(400).json({ error: 'Failed to delete FAQ' });
-  }
-});
-
-app.post('/training-requests', async (req, res) => {
-  try {
-    console.log('Received training request:', req.body);
-    const newRequest = new TrainingRequest(req.body);
-    console.log('Created new request object:', newRequest);
-    await newRequest.save();
-    console.log('Request saved successfully');
-    await notifyDiscordBot('new_training_request', newRequest);
-    console.log('Discord bot notified');
-    res.status(201).json(newRequest);
-  } catch (error) {
-    console.error('Error creating training request:', error);
-    res.status(500).json({ error: 'Failed to create training request', details: error.message });
-  }
-});
-
-app.get('/training-requests', async (req, res) => {
-  try {
-    const requests = await TrainingRequest.find().sort({ requestedDateTime: 1 });
-    res.json(requests);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch training requests' });
-  }
-});
-
-app.get('/training-requests/:id', async (req, res) => {
-  try {
-    const request = await TrainingRequest.findById(req.params.id);
-    if (!request) {
-      return res.status(404).json({ error: 'Training request not found' });
-    }
-    res.json(request);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch training request' });
-  }
-});
-
-
-
-app.put('/training-requests/:id', async (req, res) => {
-  try {
-    const request = await TrainingRequest.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!request) {
-      return res.status(404).json({ error: 'Training request not found' });
-    }
-    res.json(request);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update training request' });
-  }
-});
-
-app.delete('/training-requests/:id', async (req, res) => {
-  try {
-    const request = await TrainingRequest.findByIdAndDelete(req.params.id);
-    if (!request) {
-      return res.status(404).json({ error: 'Training request not found' });
-    }
-    res.json({ message: 'Training request deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete training request' });
-  }
-});
-
-app.post('/training-requests/:id/accept', async (req, res) => {
-  try {
-    const request = await TrainingRequest.findById(req.params.id);
-    if (!request) {
-      return res.status(404).json({ error: 'Training request not found' });
-    }
-
-    // Update request status and instructor information
-    request.status = 'accepted';
-    request.instructorId = req.query.instructorId;
-    request.instructorNickname = req.query.instructorNickname;
-
-    await request.save();
-
-    // Fetch student and instructor details (if needed for the DMs)
-    const student = await User.findById(request.studentId);
-    const instructor = await User.findById(request.instructorId);
-
-    // Send DMs to student and instructor
-    await sendDirectMessage(request.studentId, `Your ${request.trainingType} training request for ${request.requestedDateTime} has been accepted by ${instructor.nickname}.`);
-    await sendDirectMessage(request.instructorId, `You have accepted a ${request.trainingType} training request from ${student.nickname} for ${request.requestedDateTime}.`);
-
-    res.json(request);
-  } catch (error) {
-    console.error('Error accepting training request:', error);
-    res.status(500).json({ error: 'Failed to accept training request', details: error.message });
   }
 });
 
