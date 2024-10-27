@@ -236,7 +236,8 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
             let newNickname = newMember.nickname || newMember.user.username;
 
             if (newNickname.includes('| vCFI')) {
-                newNickname = newNickname.replace('| vCFI', '| vIR');
+                // Replace "| vCFI" with "| viP3"
+                newNickname = newNickname.replace('| vCFI', '| iP3');
             }
 
             await newMember.setNickname(newNickname);
@@ -258,10 +259,11 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
             // Check and update the nickname
             let newNickname = newMember.nickname || newMember.user.username;
 
-            if (!newNickname.includes('| vPPL') && !newNickname.includes('| vIR')) {
+            // Check for any of the tags and replace or add "| vCFI" as needed
+            if (!/\| (vP1|vP2|vP3|iP1|iP2|iP3)/.test(newNickname)) {
                 newNickname = `${newNickname} | vCFI`;
             } else {
-                newNickname = newNickname.replace(/\| vPPL| vIR/, '| vCFI');
+                newNickname = newNickname.replace(/\| (vP1|vP2|vP3|iP1|iP2|iP3)/, '| vCFI');
             }
 
             await newMember.setNickname(newNickname);
