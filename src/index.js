@@ -290,7 +290,7 @@ function getPreviousRating(currentRating) {
   return currentIndex > 0 ? ratingsOrder[currentIndex - 1] : null;
 }
 
-async function updateDiscordRoles(studentId, newRating, oldRating) {
+async function updateDiscordRoles(studentId, newRating, oldRating, promote = true) {
   try {
     const guild = client.guilds.cache.get(guildId);
     const member = await guild.members.fetch(studentId);
@@ -299,7 +299,6 @@ async function updateDiscordRoles(studentId, newRating, oldRating) {
     const newRole = guild.roles.cache.find(role => role.name === newRating);
 
     if (newRole) {
-      // Remove all prior rating roles, including vStudent Pilot, vP1, vP2, etc.
       const allRatings = ['vStudent Pilot', 'vP1', 'vP2', 'vP3', 'iP1', 'iP2', 'iP3'];
       for (const rating of allRatings) {
         if (rating !== newRating) {
@@ -317,31 +316,29 @@ async function updateDiscordRoles(studentId, newRating, oldRating) {
       await member.roles.add(newRole);
       console.log(`Added role ${newRating} to user ${studentId}`);
 
-      // Update the nickname based on the new role
+      // Update nickname
       let newNickname = member.nickname || member.user.username;
-
-      // Ensure the nickname reflects the newRating and removes any old ones
       allRatings.forEach(rating => {
         if (newNickname.includes(`| ${rating}`)) {
           newNickname = newNickname.replace(`| ${rating}`, `| ${newRating}`);
         }
       });
 
-      // If the nickname doesn't already include the newRating, add it
       if (!newNickname.includes(`| ${newRating}`)) {
         newNickname = `${newNickname} | ${newRating}`;
       }
+      await member.setNickname(newNickname);
 
-      await member.setNickname(newNickname);  // Update the member's nickname
-
-      // Announce the new rating
-      const announcementChannel = client.channels.cache.get('1264403466457972839');
-      if (announcementChannel) {
-        const mentionTag = `<@${studentId}>`;
-        const message = await announcementChannel.send(`Let's congratulate ${mentionTag} with their recent promotion to ${newRating} 🎉`);
-        await message.react('🎉');
-      } else {
-        console.error(`Channel with ID '1264403466457972839' not found.`);
+      // Announce the new rating only if promote is true
+      if (promote) {
+        const announcementChannel = client.channels.cache.get('1264403466457972839');
+        if (announcementChannel) {
+          const mentionTag = `<@${studentId}>`;
+          const message = await announcementChannel.send(`Let's congratulate ${mentionTag} with their recent promotion to ${newRating} 🎉`);
+          await message.react('🎉');
+        } else {
+          console.error(`Channel with ID '1264403466457972839' not found.`);
+        }
       }
     } else {
       console.error(`Role ${newRating} not found in guild.`);
@@ -574,39 +571,33 @@ app.post('/vcfis/:userId/toggle', async (req, res) => {
         const studentReportsChannel = await guild.channels.fetch('1261386638366343208');
         await studentReportsChannel.send(reportMessage);
 
-        // **Updated Logic for Role and Nickname Management**
+        const promote = req.body.nextRating && req.body.nextRating !== 'Re-doing Same Session';
 
-        // If the student passed the session or is not redoing the same session
-        if (req.body.nextRating && req.body.nextRating !== 'Re-doing Same Session') {
-            // **Add the new rating role based on the sessionType (the one they just passed)**
-            await updateDiscordRoles(req.body.studentId, req.body.sessionType, req.body.nextRating);
+        if (promote) {
+            await updateDiscordRoles(req.body.studentId, req.body.sessionType, req.body.nextRating, promote);
         } else if (req.body.nextRating === 'Re-doing Same Session') {
-            // **Logic for redoing the session: Award the previous role (e.g., vP2 if redoing vP3 session)**
-            const previousRating = getPreviousRating(req.body.sessionType); // Custom function to get the previous rating like vP2
-            await updateDiscordRoles(req.body.studentId, previousRating, req.body.sessionType);
+            const previousRating = getPreviousRating(req.body.sessionType);
+            await updateDiscordRoles(req.body.studentId, previousRating, req.body.sessionType, false);
         }
 
-// Update nickname based on the updated roles
-if (req.body.nextRating && req.body.nextRating !== 'Re-doing Same Session') {
-  let newNickname = member.nickname || member.user.username;
+        // **Skip nickname update if "Re-doing Same Session" is selected**
+        if (req.body.nextRating !== 'Re-doing Same Session') {
+            let newNickname = member.nickname || member.user.username;
 
-  // Remove any old rating extension from the nickname
-  const allRatings = ['vSP', 'vPPL', 'vIR', 'vP1', 'vP2', 'vP3', 'iP1', 'iP2', 'iP3'];
-  allRatings.forEach(rating => {
-      const ratingPattern = new RegExp(`\\|\\s${rating}`, 'g');
-      newNickname = newNickname.replace(ratingPattern, ''); // Remove all occurrences of old ratings
-  });
+            const allRatings = ['vSP', 'vPPL', 'vIR', 'vP1', 'vP2', 'vP3', 'iP1', 'iP2', 'iP3'];
+            allRatings.forEach(rating => {
+                const ratingPattern = new RegExp(`\\|\\s${rating}`, 'g');
+                newNickname = newNickname.replace(ratingPattern, '');
+            });
 
-  // Trim any extra spaces
-  newNickname = newNickname.trim();
+            newNickname = newNickname.trim();
 
-  // Add the new rating to the nickname
-  if (!newNickname.includes(`| ${req.body.sessionType}`)) {
-      newNickname = `${newNickname} | ${req.body.sessionType}`;
-  }
+            if (!newNickname.includes(`| ${req.body.sessionType}`)) {
+                newNickname = `${newNickname} | ${req.body.sessionType}`;
+            }
 
-  await member.setNickname(newNickname); // Update the member's nickname
-}
+            await member.setNickname(newNickname);
+        }
 
         res.json({ success: true, report: savedReport });
     } catch (error) {
