@@ -260,10 +260,10 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
             let newNickname = newMember.nickname || newMember.user.username;
 
             // Check for any of the tags and replace or add "| vCFI" as needed
-            if (!/\| (vP1|vP2|vP3|iP1|iP2|iP3)/.test(newNickname)) {
+            if (!/\| (vSP|vP1|vP2|vP3|iP1|iP2|iP3)/.test(newNickname)) {
                 newNickname = `${newNickname} | vCFI`;
             } else {
-                newNickname = newNickname.replace(/\| (vP1|vP2|vP3|iP1|iP2|iP3)/, '| vCFI');
+                newNickname = newNickname.replace(/\| (vSP|vP1|vP2|vP3|iP1|iP2|iP3)/, '| vCFI');
             }
 
             await newMember.setNickname(newNickname);
