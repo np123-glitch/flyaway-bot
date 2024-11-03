@@ -18,7 +18,7 @@ async execute(interaction) {
 			.addComponents(button);
   
 
-  await interaction.reply ({content: `Click below to go to **VASTIM STATS** page.` , components: [row] , ephemeral: true })
+  await interaction.reply ({content: `Click below to go to **VATSIM STATS** page.` , components: [row] , ephemeral: true })
 }
 
 }
