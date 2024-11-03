@@ -2,8 +2,8 @@ const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = re
 
 module.exports = {
   data: new SlashCommandBuilder()
-.setName('verify-hours')
-.setDescription('verify how many hours someone has one VATSIM')
+.setName('check-stats')
+.setDescription('verify how many hours someone has on VATSIM')
 .addStringOption(options => options.setName('cid').setDescription('The CID of the user').setRequired(true)),
 
 
@@ -11,7 +11,7 @@ module.exports = {
 async execute(interaction) {
   const cid = await interaction.options.getString('cid')
   const button = new ButtonBuilder()
-	.setLabel('✅ VERIFY')
+	.setLabel('✅ Check Stats')
 	.setURL(`https://stats.vatsim.net/stats/${cid}`)
 	.setStyle(ButtonStyle.Link);
   const row = new ActionRowBuilder()
