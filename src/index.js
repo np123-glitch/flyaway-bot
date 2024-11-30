@@ -199,7 +199,7 @@ client.on('guildMemberAdd', async member => {
       await sentMessage.react('🎉');
 
       // Add vStudent Pilot role to the member
-      member.roles.add(member.guild.roles.cache.find(role => role.name === "vStudent Pilot"));
+      member.roles.add(member.guild.roles.cache.find(role => role.name === "Verified"));
 
       // Change the member's nickname to include "| vSP"
       await member.setNickname(`${member.user.username} | vSP`);

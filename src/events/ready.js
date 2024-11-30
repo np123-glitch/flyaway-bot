@@ -61,6 +61,17 @@ if (process.env.FAQ_MONGODB_URI) {
   }
 }
 
+
+if (process.env.FAQ_MONGODB_URI) { // Re-use the FAQ URI since it's the same DB
+  try {
+    const userConnection = await mongoose.createConnection(process.env.FAQ_MONGODB_URI, {});
+    console.log('FlyAway is connected to the User Database!');
+    global.userConnection = userConnection; // Make it globally accessible
+  } catch (error) {
+    console.error("FlyAway Bot is unable to connect to the User Database (flyaway_exams):", error);
+  }
+}
+
     try {
       client.user.setStatus("online");
       client.user.setActivity("FlyAway students train!", {
