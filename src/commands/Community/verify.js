@@ -23,7 +23,7 @@ module.exports = {
             const user = await User.findOne({ vatsimId: cid });
 
             if (!user) {
-                return interaction.reply({ content: `No VATSIM profile found with that CID (${cid}). Make sure you logged in with VATSIM on the website.`, ephemeral: true });
+                return interaction.reply({ content: `No VATSIM profile found with that CID (${cid}). Make sure you [logged in with VATSIM](https://flyawayvirtual.com/auth/vatsim) on the website.`, ephemeral: true });
             }
 
             // Update user data in the database
