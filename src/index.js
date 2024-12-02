@@ -664,13 +664,22 @@ app.get('/student-reports', async (req, res) => {
       if (!member) throw new Error('Member not found');
      
       const ratings = [];
-      if (member.roles.cache.has('1260981907227807754')) ratings.push('vStudent');
-      if (member.roles.cache.has('1289288863478583308')) ratings.push('vP1');
-      if (member.roles.cache.has('1289288943782858752')) ratings.push('vP2');
-      if (member.roles.cache.has('1289289000061763616')) ratings.push('vP3');
-      if (member.roles.cache.has('1289289038485782549')) ratings.push('iP1');
-      if (member.roles.cache.has('1289289119909941248')) ratings.push('iP2');
-      if (member.roles.cache.has('1289289179561463849')) ratings.push('iP3');
+      if (member.roles.cache.has('1312559011547054170')) ratings.push('VATSIM NEW');
+      if (member.roles.cache.has('1289289000061763616')) ratings.push('VATSIM PPL');
+      if (member.roles.cache.has('1312558978890207303')) ratings.push('VATSIM IR');
+      if (member.roles.cache.has('1312558950088183858')) ratings.push('VATSIM CMEL');
+      if (member.roles.cache.has('1312557583504113787')) ratings.push('VATSIM ATPL');
+      if (member.roles.cache.has('1312559107512729600')) ratings.push('ATC RATING: OBS');
+      if (member.roles.cache.has('1312559705566089247')) ratings.push('ATC RATING: S1');
+      if (member.roles.cache.has('1312559740743581849')) ratings.push('ATC RATING: S2');
+      if (member.roles.cache.has('1312559763833229332')) ratings.push('ATC RATING: S3');
+      if (member.roles.cache.has('1289289326568603648')) ratings.push('ATC RATING: C1');
+      if (member.roles.cache.has('1312559835140722839')) ratings.push('ATC RATING: C3');
+      if (member.roles.cache.has('1312559870247174186')) ratings.push('ATC RATING: I1');
+      if (member.roles.cache.has('1312559900945158174')) ratings.push('ATC RATING: I3');
+      if (member.roles.cache.has('1312559927872454668')) ratings.push('ATC RATING: SUP');
+      if (member.roles.cache.has('1312559959774593025')) ratings.push('ATC RATING: ADM');
+      
 
      
       res.json(ratings);

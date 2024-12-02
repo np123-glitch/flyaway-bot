@@ -34,10 +34,16 @@ module.exports = {
                 discordLinked: true
             });
 
-
-            // Role assignments (Pilot and ATC)
+            // Role assignments (Pilot and ATC) - Remove old roles first
             const pilotRating = user.pilotRating;
             const atcRating = user.ratingShort;
+
+            const allPilotRoles = guild.roles.cache.filter(role => role.name.startsWith("VATSIM"));
+            const allATCRoles = guild.roles.cache.filter(role => role.name.startsWith("ATC RATING:"));
+
+            await member.roles.remove(allPilotRoles); // Remove all pilot roles
+            await member.roles.remove(allATCRoles); // Remove all ATC roles
+
 
             const pilotRole = guild.roles.cache.find(role => role.name === `VATSIM ${pilotRating}`);
             const atcRole = guild.roles.cache.find(role => role.name === `ATC RATING: ${atcRating}`);
@@ -56,17 +62,14 @@ module.exports = {
                 console.error('Verified role not found in the guild.');
             }
 
-
             // Nickname setting (excluding specific roles)
-            const excludedRoles = ["Admin", "VCFI", "WebTeam"]; // Replace with your actual role names
+            const excludedRoles = ["Admin", "WebTeam"]; // Replace with your actual role names
             if (!member.roles.cache.some(role => excludedRoles.includes(role.name))) {
                 const nickname = pilotRating === "NEW" ? `${user.firstName} ${user.lastName}` : `${user.firstName} ${user.lastName} | ${pilotRating}`;
                 await member.setNickname(nickname);
             }
 
-
-
-            interaction.reply({ content: `Hey ${user.firstName}, your Discord account has been successfully linked to VATSIM CID ${cid}. You have been given the Verified role and appropriate pilot/ATC roles.`, ephemeral: true });
+            interaction.reply({ content: `Hey ${user.firstName}, your Discord account has been successfully linked to the VATSIM CID: **${cid}**. You have been given the Verified role and appropriate pilot/ATC roles.`, ephemeral: true });
 
         } catch (error) {
             console.error('Error during /verify command:', error);

@@ -14,19 +14,15 @@ module.exports = {
             .addChoices(
                 { name: 'I am new to VATSIM', value: 'I am new to VATSIM' },
                 { name: 'I have a small amount of experience on VATSIM', value: 'I have a small amount of experience on VATSIM' },
-                { name: 'I am explerienced on VATSIM', value: 'I am explerienced on VATSIM' },
+                { name: 'I am experienced on VATSIM', value: 'I am experienced on VATSIM' },
             ))
     .addStringOption(option =>
         option.setName('vfrorifr')
         .setDescription('What type of flight are you looking to perfom?')
         .setRequired(true)
         .addChoices(
-            { name: 'vP1', value: 'vP1' },
-            { name: 'vP2', value: 'vP2' },
-            { name: 'vP3', value: 'vP3' },
-            { name: 'iP1', value: 'iP1' },
-            { name: 'iP2', value: 'iP2' },
-            { name: 'iP3', value: 'iP3' },
+            { name: 'VATSIM PPL', value: 'VATSIM PPL' },
+            { name: 'VATSIM IR', value: 'VATSIM IR' },
             { name: 'Targeted Training', value: 'Targeted Training' } // Add this choice
         ))
         
@@ -35,7 +31,8 @@ module.exports = {
 					.setDescription('In which continent are you comfortable teaching in?')
 					.setRequired(true)
 					.addChoices(
-						{ name: 'MSFS2020', value: 'MSFS2020' },
+						{ name: 'MSFS2024', value: 'MSFS2024' },
+                        { name: 'MSFS2020', value: 'MSFS2020' },
 						{ name: 'X-Plane 12', value: 'X-Plane 12' },
 						{ name: 'X-Plane 11', value: 'X-Plane 11' },
 						{ name: 'P3D', value: 'P3D' },
@@ -50,13 +47,8 @@ module.exports = {
             .setDescription('In which continent are you looking to fly in?')
             .setRequired(true)
             .addChoices(
-                { name: 'United States', value: 'United States VATUSA Division' },
-                { name: 'North America', value: 'North America' },
-                { name: 'South America', value: 'South America' },
-                { name: 'Europe', value: 'Europe' },
-                { name: 'Africa', value: 'Africa' },
-                { name: 'Asia', value: 'Asia' },
-                { name: 'Australia', value: 'Australia' }
+                { name: 'United States (Only Current Option)', value: 'United States VATUSA Division' }
+
 
             ))
     // Optional option after required options
@@ -92,7 +84,7 @@ module.exports = {
 
         const accept = new ButtonBuilder()
             .setCustomId(`acceptTraining_${interaction.user.id}`)
-            .setLabel('Accept Training Request (vCFIs ONLY)')
+            .setLabel('Accept Training Request (Training Staff ONLY)')
             .setStyle(ButtonStyle.Primary);
 
         const row = new ActionRowBuilder()

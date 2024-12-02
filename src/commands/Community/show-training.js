@@ -11,9 +11,9 @@ module.exports = {
         .setDescription('The training type')
         .setRequired(true)
         .addChoices(
-          { name: 'vP3, vP2, or vP1', value: 'vP3, vP2, or vP1' },
-          { name: 'iP3, iP2, or iP1', value: 'iP3, iP2, or iP1' },
-          { name: 'ANY ACADEMY SESSION', value: 'Any Academy Session' },
+          { name: 'VATSIM PPL Training', value: 'VATSIM PPL Training Only' },
+          { name: 'VATSIM IR Training', value: 'VATSIM IR Training Only' },
+          { name: 'VATSIM PPL or IR Training', value: 'VATSIM PPL or IR Training' },
         )
     )
     .addStringOption(option =>
@@ -21,7 +21,9 @@ module.exports = {
         .setDescription('In which continent are you comfortable teaching in?')
         .setRequired(true)
         .addChoices(
+          { name: 'MSFS2024', value: 'MSFS2024' },
           { name: 'MSFS2020', value: 'MSFS2020' },
+          { name: 'MSFS2020 or MSFS2024', value: 'MSFS2020 or MSFS2024' },
           { name: 'X-Plane 12', value: 'X-Plane 12' },
           { name: 'X-Plane 11', value: 'X-Plane 11' },
           { name: 'P3D', value: 'P3D' },
@@ -34,13 +36,8 @@ module.exports = {
         .setDescription('In which continent are you comfortable teaching in?')
         .setRequired(true)
         .addChoices(
-          { name: 'United States', value: 'United States VATUSA Division' },
-          { name: 'North America', value: 'North America' },
-          { name: 'South America', value: 'South America' },
-          { name: 'Europe', value: 'Europe' },
-          { name: 'Africa', value: 'Africa' },
-          { name: 'Asia', value: 'Asia' },
-          { name: 'Oceania', value: 'Oceania' },
+          { name: 'United States', value: 'United States VATUSA Division' }
+
         )
     )
     .addStringOption(options => options.setName('comments').setDescription('Any extra comments?').setRequired(false)),
@@ -65,7 +62,7 @@ module.exports = {
         { name: 'Aircraft Available To Teach', value: aircraft },
         { name: 'Flight Location', value: location },
       )
-      .setFooter({ text: 'Maintained by the FlyAway Virtual Flight School Administration Department', iconURL: 'https://cdn.discordapp.com/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=6695d98f&is=6694880f&hm=196e3e7800f06e6965b8e0380e7638d9d29b07253b8ecc9df13e128e71faf325&' });
+      .setFooter({ text: 'Maintained by the FlyAway Virtual Flight School Training Department', iconURL: 'https://cdn.discordapp.com/attachments/1261077608817234010/1261689389667582045/FLIGH_AWAY.png?ex=6695d98f&is=6694880f&hm=196e3e7800f06e6965b8e0380e7638d9d29b07253b8ecc9df13e128e71faf325&' });
 
     if (comments) {
       exampleEmbed.addFields({ name: 'Extra Comments', value: comments });
