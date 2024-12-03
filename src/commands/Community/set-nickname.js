@@ -3,7 +3,7 @@ const getUserModel = require('../../Schemas/User'); // Import the User model
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('rename')
+        .setName('set-nickname')
         .setDescription('Rename your nickname.')
         .addStringOption(option =>
             option.setName('name_format')
